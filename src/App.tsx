@@ -100,32 +100,18 @@ const seedSpeakers: Speaker[] = [
     socialUrl: "",
   },
 ];
-const seedProducts: Product[] = [
-  {
-    id: 1,
-    name: "Camiseta Un Joven con la 10",
-    type: "Camiseta",
-    price: 25000,
-    status: "Disponible",
-    sizes: ["S", "M", "L", "XL"],
-  },
-  {
-    id: 2,
-    name: "Gorra Un Joven con la 10",
-    type: "Gorra",
-    price: 18000,
-    status: "Disponible",
-    sizes: ["Ajustable"],
-  },
-  {
-    id: 3,
-    name: "Tote Bag Oficial",
-    type: "Tote",
-    price: 12000,
-    status: "Próximamente",
-    sizes: [],
-  },
-];
+const seedProducts: Product[] = [];
+const demoProductIds = new Set([1, 2, 3]);
+function loadProducts(): Product[] {
+  try {
+    const stored = JSON.parse(localStorage.getItem("j10-products") || "null");
+    return Array.isArray(stored)
+      ? stored.filter((product) => !demoProductIds.has(Number(product?.id)))
+      : seedProducts;
+  } catch {
+    return seedProducts;
+  }
+}
 function TenMark({ className = "" }: { className?: string }) {
   return (
     <img
@@ -472,6 +458,9 @@ function Merch({
         <br />
         <em>SE LLEVA.</em>
       </Title>
+      {products.length === 0 && (
+        <p className="merchEmptyNotice">Pronto anunciaremos los productos oficiales del congreso.</p>
+      )}
       {products.length > 0 && (
         <div className="productGrid">
           {products.map((p, i) => (
@@ -730,7 +719,7 @@ function Checkout({
                 />
               </label>
               <label>
-                Correo electronico
+                Correo electrónico
                 <input
                   required
                   type="email"
@@ -1210,7 +1199,7 @@ function Login({ go }: { go: () => void }) {
       <div className="loginArt">
         <img src="/assets/congreso-hero.png" />
         <h1>
-          Administracion
+          Administración
           <br />
           <em>del congreso.</em>
         </h1>
@@ -1432,7 +1421,7 @@ function PaymentSettings() {
   const addNotificationEmail = () => {
     const email = newNotificationEmail.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Escribe un correo valido para agregarlo.");
+      setError("Escribe un correo válido para agregarlo.");
       return;
     }
     if (orderNotificationEmails.includes(email)) {
@@ -1791,7 +1780,7 @@ function SpeakerSettings({
         ))}
         {speakers.length === 0 && (
           <div className="speakerEmptyState">
-            Aun no agregas predicadores. Usa “Agregar predicador” para crear el
+            Aún no agregas predicadores. Usa “Agregar predicador” para crear el
             primer perfil.
           </div>
         )}
@@ -2196,7 +2185,7 @@ function Table({
               </td>
               <td>
                 <b>{o.id}</b>
-                <small>Codigo {o.code}</small>
+                <small>Código {o.code}</small>
               </td>
               <td>
                 <b>{o.item}</b>
@@ -2674,15 +2663,7 @@ function Admin({
 export function AdminApp() {
   const [logged, setLogged] = useState(false),
     [authReady, setAuthReady] = useState(false);
-  const [products, setP] = useState<Product[]>(() => {
-    try {
-      return (
-        JSON.parse(localStorage.getItem("j10-products") || "") || seedProducts
-      );
-    } catch {
-      return seedProducts;
-    }
-  });
+  const [products, setP] = useState<Product[]>(loadProducts);
   const [orders, setO] = useState<Order[]>([]),
     [speakersBg, setSpeakersBg] = useState(""),
     [speakers, setSpeakers] = useState<Speaker[]>(seedSpeakers);
@@ -2745,15 +2726,7 @@ export function AdminApp() {
 }
 
 export default function App() {
-  const [products] = useState<Product[]>(() => {
-    try {
-      return (
-        JSON.parse(localStorage.getItem("j10-products") || "") || seedProducts
-      );
-    } catch {
-      return seedProducts;
-    }
-  });
+  const [products] = useState<Product[]>(loadProducts);
   const [speakersBg, setSpeakersBg] = useState(""),
     [speakers, setSpeakers] = useState<Speaker[]>(seedSpeakers),
     [paymentReference] = useState(

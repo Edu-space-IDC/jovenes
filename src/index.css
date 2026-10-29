@@ -528,3 +528,5 @@ footer>div { display:flex; align-items:center; gap:12px; }
   .lookupEntryPass { grid-template-columns:1fr; }
   .lookupEntryPass .qr { width:min(240px,72vw); height:min(240px,72vw); }
 }
+
+.merchEmptyNotice{max-width:560px;margin:28px 0 0;color:#71807d;font-size:14px;line-height:1.7}
