@@ -1,0 +1,10 @@
+{
+  "description": "Promociona un congreso juvenil, vende manillas y merch, y ayuda a los administradores a gestionar pagos, asistentes, inventario y códigos de acceso.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
