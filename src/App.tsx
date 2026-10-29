@@ -574,7 +574,7 @@ function Band({ buy }: { buy: () => void }) {
           <small>14—16 NOV · ACCESO TOTAL</small>
         </div>
         <span>
-          $15.000<small>ACCESO COMPLETO &middot; COP</small>
+          $30.000<small>ACCESO COMPLETO &middot; COP</small>
         </span>
       </div>
     </section>
@@ -617,7 +617,7 @@ function Checkout({
     id: 0,
     name: "Manilla de acceso",
     type: "Entrada",
-    price: 15000,
+    price: 30000,
     status: "Disponible" as Status,
     sizes: [],
   };

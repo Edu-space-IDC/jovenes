@@ -71,7 +71,7 @@ const wompiRedirectUrl = process.env.WOMPI_REDIRECT_URL
 const wompiExpectedPrefix = wompiEnvironment === 'prod' ? 'pub_prod_' : 'pub_test_'
 const wompiReady = Boolean(wompiPublicKey?.startsWith(wompiExpectedPrefix) && wompiIntegritySecret && wompiEventsSecret && wompiRedirectUrl)
 const paymentCatalog = {
-  ticket: { name: 'Manilla de acceso', price: 15000, sizes: [], available: true },
+  ticket: { name: 'Manilla de acceso', price: 30000, sizes: [], available: true },
   '1': { name: 'Camiseta Un Joven con la 10', price: 25000, sizes: ['S', 'M', 'L', 'XL'], available: true },
   '2': { name: 'Gorra Un Joven con la 10', price: 18000, sizes: ['Ajustable'], available: true },
   '3': { name: 'Tote Bag Oficial', price: 12000, sizes: [], available: false },
