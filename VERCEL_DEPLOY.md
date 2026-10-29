@@ -1,6 +1,6 @@
 # Publicar en Vercel
 
-El proyecto queda preparado como sitio Vite estático más una función Node/Express para `/api/*`. Los datos continúan en Google Sheets mediante Apps Script; Vercel no guarda pedidos en el disco local.
+El proyecto queda preparado como sitio Vite estático más una función Node/Express para `/api/*`. Las rutas API se reescriben a una función común y esta restaura la ruta original antes de entregarla a Express. Los datos continúan en Google Sheets mediante Apps Script; Vercel no guarda pedidos en el disco local.
 
 ## Antes de publicar
 
