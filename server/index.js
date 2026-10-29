@@ -629,6 +629,17 @@ app.post('/api/admin/orders/:reference/confirm-nequi', requireAdmin, async (req,
   }
 })
 
+app.post('/api/admin/orders/:reference/reject', requireAdmin, async (req, res) => {
+  try {
+    const result = await gas('rejectPaymentOrder', { reference: req.params.reference })
+    if (!result.ok) return res.status(409).json({ error: result.error || 'No se pudo rechazar el pedido.' })
+    res.json({ ok: true, emailSent: Boolean(result.emailSent), emailError: result.emailError || '' })
+  } catch (error) {
+    console.error('reject payment order:', error.message)
+    res.status(503).json({ error: error.message || 'No se pudo rechazar el pedido.' })
+  }
+})
+
 app.post('/api/admin/validate-entry', requireAdmin, async (req, res) => {
   const pickupCode = String(req.body?.pickupCode || '').trim()
   const reference = String(req.body?.reference || '').trim().slice(0, 100)

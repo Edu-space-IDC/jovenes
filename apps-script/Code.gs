@@ -126,6 +126,7 @@ function doPost(e) {
     if (input.action === 'createPaymentOrder') return output(createPaymentOrder_(ss, input.order));
     if (input.action === 'getPaymentOrder') return output({ ok: true, order: getPaymentOrder_(ss, input.reference) });
     if (input.action === 'updatePaymentOrder') return output(updatePaymentOrder_(ss, input.reference, input.update));
+    if (input.action === 'rejectPaymentOrder') return output(rejectPaymentOrder_(ss, input.reference));
     if (input.action === 'updatePaymentBuyer') return output(updatePaymentBuyer_(ss, input.reference, input.buyer));
     if (input.action === 'deletePaymentOrder') return output(deletePaymentOrder_(ss, input.reference));
     if (input.action === 'clearPaymentOrders') return output(clearPaymentOrders_(ss));
@@ -315,6 +316,35 @@ function sendOrderApprovedEmail_(order) {
     htmlBody: '<p>Hola ' + escapeEmailHtml_(order.buyerName) + ',</p><p>Tu compra de <b>' + escapeEmailHtml_(item) + '</b> fue procesada correctamente. Ya puedes consultar tu estado y código de acceso con el teléfono registrado.</p>' + (confirmationUrl ? '<p><a href="' + escapeEmailHtml_(confirmationUrl) + '">Confirmar mi pedido</a></p>' : '') + '<p>Congreso Un Joven con la 10</p>',
     name: 'Congreso Un Joven con la 10',
   });
+}
+function sendOrderRejectedEmail_(order) {
+  if (!order || !order.email) return { ok: false, error: 'El pedido no tiene correo de comprador.' };
+  var contactPhone = '+57 313 769 2259';
+  var contactUrl = 'https://wa.me/573137692259';
+  var item = String(order.itemName || 'Compra') + (order.size ? ' · Talla ' + order.size : '');
+  return sendEmailSafely_({
+    to: String(order.email),
+    subject: 'Actualización de tu pedido — Congreso Un Joven con la 10',
+    body: 'Hola ' + String(order.buyerName || '') + ',\n\nNo pudimos aprobar tu pedido de ' + item + '. Por favor, comunícate directamente con nosotros al ' + contactPhone + ' para revisar tu compra.\n\nCongreso Un Joven con la 10',
+    htmlBody: '<p>Hola ' + escapeEmailHtml_(order.buyerName) + ',</p><p>No pudimos aprobar tu pedido de <b>' + escapeEmailHtml_(item) + '</b>.</p><p>Por favor, comunícate directamente con nosotros al <a href="' + contactUrl + '">' + contactPhone + '</a> para revisar tu compra.</p><p>Congreso Un Joven con la 10</p>',
+    name: 'Congreso Un Joven con la 10',
+  });
+}
+function rejectPaymentOrder_(ss, reference) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var order = getPaymentOrder_(ss, reference);
+    if (!order) return { ok: false, error: 'No encontramos ese pedido.' };
+    if (order.paymentMethod !== 'NEQUI_MANUAL' || order.paymentStatus !== 'PENDING') return { ok: false, error: 'Solo se pueden rechazar pedidos manuales de Nequi pendientes.' };
+    var sheet = ss.getSheetByName('Pedidos');
+    var found = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).createTextFinder(String(reference)).matchEntireCell(true).findNext();
+    if (!found) return { ok: false, error: 'No encontramos ese pedido.' };
+    sheet.getRange(found.getRow(), PAYMENT_HEADERS_.indexOf('paymentStatus') + 1).setValue('DECLINED');
+    order.paymentStatus = 'DECLINED';
+    var email = sendOrderRejectedEmail_(order);
+    return { ok: true, emailSent: email.ok, emailError: email.ok ? '' : email.error };
+  } finally { lock.releaseLock(); }
 }
 function lookupOrdersByPhone_(ss, phone) {
   var digits = normalizePhone_(phone);

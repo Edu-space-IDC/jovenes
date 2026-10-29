@@ -2151,15 +2151,17 @@ function CredentialSettings() {
 function Table({
   orders,
   onConfirm,
+  onReject,
   onEdit,
   onDelete,
 }: {
   orders: Order[];
   onConfirm?: (reference: string) => void;
+  onReject?: (reference: string) => void;
   onEdit?: (order: Order) => void;
   onDelete?: (order: Order) => void;
 }) {
-  const hasActions = Boolean(onConfirm || onEdit || onDelete);
+  const hasActions = Boolean(onConfirm || onReject || onEdit || onDelete);
   return (
     <div className="table">
       <table>
@@ -2213,6 +2215,15 @@ function Table({
                         onClick={() => onConfirm(o.reference || o.id)}
                       >
                         Confirmar pago
+                      </button>
+                    )}
+                  {onReject && o.paymentMethod === "NEQUI_MANUAL" &&
+                    o.status === "PENDING" && (
+                      <button
+                        className="buyerDeleteButton"
+                        onClick={() => onReject(o.reference || o.id)}
+                      >
+                        Rechazar pedido
                       </button>
                     )}
                   {onEdit && <button className="buyerEditButton" onClick={() => onEdit(o)}>Editar</button>}
@@ -2275,6 +2286,20 @@ function Admin({
       alert(
         err instanceof Error ? err.message : "No se pudo confirmar el pago.",
       );
+    }
+  };
+  const rejectOrder = async (reference: string) => {
+    if (!window.confirm("¿Rechazar este pedido? El comprador recibirá un correo para comunicarse al +57 313 769 2259.")) return;
+    try {
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(reference)}/reject`, {
+        method: "POST", credentials: "same-origin",
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "No se pudo rechazar el pedido.");
+      setOrders((current) => current.map((order) => (order.reference || order.id) === reference ? { ...order, status: "DECLINED" } : order));
+      if (!data.emailSent) alert(`Pedido rechazado, pero no se pudo enviar el correo: ${data.emailError || "revisa la configuración de Apps Script"}`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "No se pudo rechazar el pedido.");
     }
   };
   const editBuyer = (order: Order) => {
@@ -2513,7 +2538,7 @@ function Admin({
               </div>
               <p className="buyerTableNote">Cada fila representa un pedido; un comprador puede aparecer más de una vez.</p>
               <section className="panel">
-                <Table orders={shown} onConfirm={confirmNequi} onEdit={editBuyer} onDelete={deleteBuyer} />
+                <Table orders={shown} onConfirm={confirmNequi} onReject={rejectOrder} onEdit={editBuyer} onDelete={deleteBuyer} />
               </section>
             </>
           )}
